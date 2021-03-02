@@ -16,6 +16,7 @@ uniform float u_SpecularStrength;
 uniform float u_DiffuseStrength;
 
 uniform int u_CarEmissive;
+uniform int u_ToonShade;
 
 uniform int u_RampingSpec;
 uniform int u_RampingDiff;
@@ -29,6 +30,8 @@ uniform vec3  u_CamPos;
 uniform vec3 playerPos;
 uniform vec3 enemyPos;
 
+const int bands = 5;
+const float scaleFactor = 1.0 / bands;
 
 out vec4 frag_color;
 
@@ -69,7 +72,7 @@ void main() {
 	float spec = u_RampingSpec==1?texture(rampTex,vec2(pow(max(dot(camDir, reflectDir), 0.0), 4),0.5)).r:pow(max(dot(camDir, reflectDir), 0.0), 4); // Shininess coefficient (can be a uniform)
 	vec3 specular = specularStrength * spec* lightColor; // Can also use a specular color
 	
-	vec3 result = (ambient + diffuse + specular);
+	vec3 result = u_ToonShade==1?scaleFactor * floor(bands * (ambient + diffuse + specular)) : (ambient + diffuse + specular);
 	
 	frag_color = u_CarEmissive==1?(texture(textureSampler, UV)/(distPlay/10) *vec4(result,1.0)+vec4(1/distPlay,0.0f,1/distEnemy,0.0f)):(texture(textureSampler, UV)*vec4(result,1.0));
 }

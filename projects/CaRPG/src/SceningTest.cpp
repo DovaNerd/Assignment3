@@ -1196,18 +1196,19 @@ int SceningTest::Update()
 	//framebuffer bound
 	framebuffer->BindBuffer(0);
 	rampTex->Bind(20);
-
+	
 
 	basicShader->Bind();
 	basicShader->SetUniform("u_CamPos", camComponent->GetPosition());
 	basicShader->SetUniform("playerPos", m_Registry.get<syre::Transform>(m_PCar).GetPosition());
 	basicShader->SetUniform("enemyPos", m_Registry.get<syre::Transform>(m_enemy).GetPosition());
-	basicShader->SetUniform("u_SpecularStrength", specularOn ? 0.7f : 0.0f);
-	basicShader->SetUniform("u_AmbientStrength", ambientOn ? 0.3f : 0.0f);
+	basicShader->SetUniform("u_SpecularStrength", specularOn ? 4.0f : 0.0f);
+	basicShader->SetUniform("u_AmbientStrength", ambientOn ? 0.8f : 0.0f);
 	basicShader->SetUniform("u_DiffuseStrength", diffuseOn ? 1.0f : 0.0f);
 	basicShader->SetUniform("u_CarEmissive", carLighting ? 1 : 0);
 	basicShader->SetUniform("u_RampingSpec", rampOnSpec ? 1 : 0);
 	basicShader->SetUniform("u_RampingDiff", rampOnDiff ? 1 : 0);
+	basicShader->SetUniform("u_ToonShade", toonShade ? 1 : 0);
 
 
 
@@ -1234,8 +1235,8 @@ int SceningTest::Update()
 	morphShader->SetUniform("u_CamPos", camComponent->GetPosition());
 	morphShader->SetUniform("playerPos", m_Registry.get<syre::Transform>(m_PCar).GetPosition());
 	morphShader->SetUniform("enemyPos", m_Registry.get<syre::Transform>(m_enemy).GetPosition());
-	morphShader->SetUniform("u_SpecularStrength", specularOn ? 0.7f : 0.0f);
-	morphShader->SetUniform("u_AmbientStrength", ambientOn ? 0.3f : 0.0f);
+	morphShader->SetUniform("u_SpecularStrength", specularOn ? 4.0f : 0.0f);
+	morphShader->SetUniform("u_AmbientStrength", ambientOn ? 0.8f : 0.0f);
 	morphShader->SetUniform("u_DiffuseStrength", diffuseOn ? 1.0f : 0.0f);
 	morphShader->SetUniform("u_CarEmissive", carLighting ? 1 : 0);
 	morphShader->SetUniform("u_RampingSpec", rampOnSpec ? 1 : 0);
@@ -1431,6 +1432,7 @@ void SceningTest::ImGUIUpdate()
 					ImGui::SliderInt("Active CoCo Effect", &activeCube, 0, cubes.size() - 1);
 					ImGui::Text("0 is Neutral, 1 is Cool, 2 is Warm, 3 is Custom");
 				}
+				ImGui::Checkbox("Toon Shading", &toonShade);
 			}
 			if (ImGui::CollapsingHeader("Lighting"))
 			{

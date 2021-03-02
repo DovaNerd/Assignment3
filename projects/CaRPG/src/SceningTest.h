@@ -81,6 +81,7 @@ private:
 	bool carLighting = true;
 	bool rampOnSpec = false;
 	bool rampOnDiff = false;
+	bool toonShade = false;
 
 	Texture2D::sptr rampTex;
 
