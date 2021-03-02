@@ -3,6 +3,7 @@
 #include "Obstacles.h"
 
 int start = 0;
+bool film = false;
 
 SceningTest::SceningTest(GLFWwindow* inWind)
 {
@@ -717,6 +718,7 @@ void SceningTest::Start()
 	glm::vec3 ambientCol = glm::vec3(1.0f);
 	float     ambientPow = 0.5f;
 	float     shininess = 4.0f;
+
 	// These are our application / scene level uniforms that don't necessarily update
 	// every frame
 	basicShader->SetUniform("u_LightPos", lightPos);
@@ -1432,7 +1434,13 @@ void SceningTest::ImGUIUpdate()
 					ImGui::SliderInt("Active CoCo Effect", &activeCube, 0, cubes.size() - 1);
 					ImGui::Text("0 is Neutral, 1 is Cool, 2 is Warm, 3 is Custom");
 				}
+
 				ImGui::Checkbox("Toon Shading", &toonShade);
+
+				basicShader->SetUniform("u_film", (int)film); //options for lighting
+				ImGui::Checkbox("Film Grain", &film);
+				basicShader->SetUniform("u_film", (int)film); //options for lighting
+
 			}
 			if (ImGui::CollapsingHeader("Lighting"))
 			{

@@ -6,7 +6,6 @@ layout(location = 2) in vec3 inNormal;
 //LECTURE 7
 layout(location = 1) in vec2 UV;
 
-
 uniform sampler2D textureSampler;
 
 uniform layout(binding =20) sampler2D rampTex;
@@ -47,6 +46,8 @@ return fract( cos( dot(r,consts) ) * 12345.6789 );
 
 uniform float amount;
 
+uniform bool u_film;
+
 
 void main() {
 	float distPlay= max(2.0,distance(playerPos,inPos));
@@ -83,8 +84,20 @@ void main() {
 	vec3 reflectDir = reflect(-lightDir, N);
 	float spec = u_RampingSpec==1?texture(rampTex,vec2(pow(max(dot(camDir, reflectDir), 0.0), 4),0.5)).r:pow(max(dot(camDir, reflectDir), 0.0), 4); // Shininess coefficient (can be a uniform)
 	vec3 specular = specularStrength * spec* lightColor; // Can also use a specular color
+
+	vec2 UVrandom = UV;								//noise
+	UVrandom.y = random(vec2(UVrandom.y,amount));
+	textureColor.rgb += random(UVrandom) * 0.15;
+
 	
 	vec3 result = u_ToonShade==1?scaleFactor * floor(bands * (ambient + diffuse + specular)) : (ambient + diffuse + specular);
 	
-	//frag_color = u_CarEmissive==1?(texture(textureSampler, UV)/(distPlay/10) *vec4(result,1.0)+vec4(1/distPlay,0.0f,1/distEnemy,0.0f)):(texture(textureSampler, UV)*vec4(result,1.0));
+	if (u_film == false)
+	{
+	 	frag_color = u_CarEmissive==1?(texture(textureSampler, UV)/(distPlay/10) *vec4(result,1.0)+vec4(1/distPlay,0.0f,1/distEnemy,0.0f)):(texture(textureSampler, UV)*vec4(result,1.0));
+	}
+	if (u_film == true)
+	{
+		frag_color = vec4 (textureColor, 1.0); // this lines makes noise
+	}
 }
