@@ -6,6 +6,7 @@ layout(location = 2) in vec3 inNormal;
 //LECTURE 7
 layout(location = 1) in vec2 UV;
 
+
 uniform sampler2D textureSampler;
 
 uniform layout(binding =20) sampler2D rampTex;
@@ -34,6 +35,17 @@ const int bands = 5;
 const float scaleFactor = 1.0 / bands;
 
 out vec4 frag_color;
+
+float random(vec2 r) //random function
+{
+  vec2 consts = vec2(
+    23.14069263277926, // e^pi (Gelfond's constant)
+    2.665144142690225 // 2^sqrt(2) (Gelfond�Schneider constant)
+  );
+return fract( cos( dot(r,consts) ) * 12345.6789 );
+}
+
+uniform float amount;
 
 
 void main() {
@@ -74,5 +86,5 @@ void main() {
 	
 	vec3 result = u_ToonShade==1?scaleFactor * floor(bands * (ambient + diffuse + specular)) : (ambient + diffuse + specular);
 	
-	frag_color = u_CarEmissive==1?(texture(textureSampler, UV)/(distPlay/10) *vec4(result,1.0)+vec4(1/distPlay,0.0f,1/distEnemy,0.0f)):(texture(textureSampler, UV)*vec4(result,1.0));
+	//frag_color = u_CarEmissive==1?(texture(textureSampler, UV)/(distPlay/10) *vec4(result,1.0)+vec4(1/distPlay,0.0f,1/distEnemy,0.0f)):(texture(textureSampler, UV)*vec4(result,1.0));
 }

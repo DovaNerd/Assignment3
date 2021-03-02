@@ -10,7 +10,7 @@
 #include "MidGameMenu.h"
 #include "Scene2.h"
 
-//taken from CG tutorials
+//taken from CG tutorials 
 extern "C" {
 	__declspec(dllexport) unsigned long NvOptimusEnablement = 0x01;
 	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x01;
@@ -33,8 +33,8 @@ void GlDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
 	case GL_DEBUG_SEVERITY_NOTIFICATION: LOG_INFO("[{}] {}", sourceTxt, message); break;
 #endif
 	default: break;
-	}
-}
+	} 
+}   
 
 GLFWwindow* window;
 Camera::sptr camera = nullptr;
