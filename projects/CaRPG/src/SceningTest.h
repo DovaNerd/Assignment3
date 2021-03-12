@@ -7,6 +7,13 @@
 #include "Graphics/LUT.h"
 #include <cstdlib>
 #include <ctime>
+#include "Graphics/GBuffer.h"
+#include "Graphics/IlluminationBuffer.h"
+
+#include <DirectionalLight.h>
+#include <PointLight.h>
+#include <UniformBuffer.h>
+
 class SceningTest:
 	public syre::SceneParent
 {
@@ -55,6 +62,9 @@ private:
 
 	entt::entity sceneBuff;
 	entt::entity cocoBuff;
+	entt::entity gBuff;
+	entt::entity illBuff;
+
 	bool correcting = true;
 	entt::entity bloomBuff;
 	bool blooming = true;
@@ -65,6 +75,7 @@ private:
 
 	Shader::sptr basicShader;
 	Shader::sptr flatShader;
+	Shader::sptr gBufferShader;
 	Shader::sptr morphShader;
 	Shader::sptr flatMorphShader;
 	bool manualCamera = false;

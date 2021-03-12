@@ -2,6 +2,7 @@
 #include "Cars.h"
 #include "Obstacles.h"
 
+
 int start = 0;
 bool film = false;
 
@@ -21,15 +22,23 @@ void SceningTest::Start()
 	cocoBuff = m_Registry.create();
 	bloomBuff = m_Registry.create();
 	blurBuff = m_Registry.create();
+	
+	gBuff = m_Registry.create();
+	illBuff = m_Registry.create();
+
 	m_Registry.emplace<PostEffect>(sceneBuff);
 	m_Registry.emplace<CubeCoCoEffect>(cocoBuff);
 	m_Registry.emplace<CombinedBloom>(bloomBuff);
 	m_Registry.emplace<Blur>(blurBuff);
+	m_Registry.emplace<GBuffer>(gBuff);
+	m_Registry.emplace<IlluminationBuffer>(illBuff);
+
 	m_Registry.get<PostEffect>(sceneBuff).Init(width, height);
 	m_Registry.get<CubeCoCoEffect>(cocoBuff).Init(width, height);
 	m_Registry.get<CombinedBloom>(bloomBuff).Init(width, height);
 	m_Registry.get<Blur>(blurBuff).Init(width, height);
-
+	m_Registry.get<GBuffer>(gBuff).Init(width, height);
+	m_Registry.get<IlluminationBuffer>(illBuff).Init(width, height);
 
 
 	cubes.push_back(LUT3D("cubes/Neutral-512.cube"));
@@ -702,7 +711,10 @@ void SceningTest::Start()
 	flatShader->Link();
 
 
-
+	gBufferShader = Shader::Create();
+	gBufferShader->LoadShaderPartFromFile("vertex_shader.glsl", GL_VERTEX_SHADER);
+	gBufferShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER); //added g buffer shader
+	gBufferShader->Link();
 
 	
 	
@@ -786,12 +798,15 @@ int SceningTest::Update()
 	CombinedBloom* bloom = &m_Registry.get<CombinedBloom>(bloomBuff);
 	Blur* blur = &m_Registry.get<Blur>(blurBuff);
 
-
+	GBuffer* gBuffer = &m_Registry.get<GBuffer>(gBuff); //g buffer
+	IlluminationBuffer* illuminationBuffer = &m_Registry.get<IlluminationBuffer>(illBuff); //illum buffer
 
 	framebuffer->Clear();
 	colorCorrect->Clear();
 	bloom->Clear();
 	blur->Clear();
+	gBuffer->Clear(); //clear
+	illuminationBuffer->Clear();
 
 	AudioEngine& engine = AudioEngine::Instance();
 
@@ -1196,8 +1211,10 @@ int SceningTest::Update()
 	}
 
 	//framebuffer bound
-	framebuffer->BindBuffer(0);
-	rampTex->Bind(20);
+	//framebuffer->BindBuffer(0);
+	gBuffer->Bind(); //bind g buffer
+
+	//rampTex->Bind(20);
 	
 
 	basicShader->Bind();
@@ -1212,7 +1229,9 @@ int SceningTest::Update()
 	basicShader->SetUniform("u_RampingDiff", rampOnDiff ? 1 : 0);
 	basicShader->SetUniform("u_ToonShade", toonShade ? 1 : 0);
 
-
+	illuminationBuffer->SetLightSpaceViewProj(lightSpaceViewProj);//////////////////////////////////////////
+	glm::vec3 camPos = glm::inverse(view) * glm::vec4(0, 0, 0, 1);
+	illuminationBuffer->SetCamPos(camPos);
 
 	auto renderView = m_Registry.view<syre::Mesh, syre::Transform, syre::Texture>();
 	for (auto entity : renderView)
@@ -1267,7 +1286,32 @@ int SceningTest::Update()
 	}
 
 	PostEffect* lastBuffer = framebuffer;
-	framebuffer->UnBindBuffer();
+	
+	//framebuffer->UnBindBuffer();
+	gBuffer->Unbind();
+
+	illuminationBuffer->BindBuffer(0);
+
+	illuminationBuffer->UnBindBuffer();
+
+	//shadowBuffer->BindDepthAsTexture(30);
+
+	illuminationBuffer->ApplyEffect(gBuffer);
+
+	//shadowBuffer->UnbindTexture(30);
+
+	/*if (drawGBuffer)
+	{
+		gBuffer->DrawBuffersToScreen();
+	}
+	else if (drawIllumBuffer)
+	{
+		illuminationBuffer->DrawIllumBuffer();
+	}
+	else
+	{*/
+		illuminationBuffer->DrawToScreen();
+	//} 
 
 	if (blooming)
 	{
@@ -1292,6 +1336,7 @@ int SceningTest::Update()
 	}
 	lastBuffer->DrawToScreen();
 
+	
 
 	if (!manualCamera)
 	{
