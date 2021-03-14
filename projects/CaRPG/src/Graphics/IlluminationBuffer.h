@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Post/PostEffect.h"
+#include "Graphics/Post/PostEffect.h"
 #include "UniformBuffer.h"
-#include "GBuffer.h"
+#include "Graphics/GBuffer.h"
 #include "PointLight.h"
 #include "DirectionalLight.h"
 

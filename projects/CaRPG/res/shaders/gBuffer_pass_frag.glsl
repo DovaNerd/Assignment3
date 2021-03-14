@@ -1,9 +1,9 @@
 #version 420
 
 layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inColor;
+layout(location = 1) in vec2 inUV;
 layout(location = 2) in vec3 inNormal;
-layout(location = 3) in vec2 inUV;
+layout(location = 3) in vec3 inColor;
 
 uniform sampler2D s_Diffuse;
 uniform sampler2D s_Diffuse2;
@@ -13,7 +13,11 @@ uniform float u_textureMix;
 layout(location = 0) out vec4 outColors;
 layout(location = 1) out vec3 outNormals;
 layout(location = 2) out vec3 outSpecs;
-layout(location = 3) out vec3 outPositions;
+layout(location = 3) out vec3 outPositions;/*
+layout(location = 0) in vec3 outPositions;
+layout(location = 1) in vec3 outSpecs;
+layout(location = 2) in vec3 outNormals;
+layout(location = 3) in vec4 outColors;*/
 
 void main()
 {

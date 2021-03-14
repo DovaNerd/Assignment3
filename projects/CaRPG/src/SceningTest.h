@@ -13,6 +13,7 @@
 #include <DirectionalLight.h>
 #include <PointLight.h>
 #include <UniformBuffer.h>
+#include "Transform.h"
 
 class SceningTest:
 	public syre::SceneParent
@@ -75,9 +76,9 @@ private:
 
 	Shader::sptr basicShader;
 	Shader::sptr flatShader;
-	Shader::sptr gBufferShader;
 	Shader::sptr morphShader;
 	Shader::sptr flatMorphShader;
+	Shader::sptr gBufferShader;
 	bool manualCamera = false;
 	float Elapsedtime = 0;
 	bool lbutton_down = false;

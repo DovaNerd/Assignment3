@@ -1,14 +1,15 @@
 #version 420
 
 layout(location = 0) in vec3 inPos;
-layout(location = 3) in vec3 inColor;
-layout(location = 2) in vec3 inNormal;
-//LECTURE 7
 layout(location = 1) in vec2 UV;
+layout(location = 2) in vec3 inNormal;
+layout(location = 3) in vec3 inColor;
+//LECTURE 7
+
 
 uniform sampler2D textureSampler;
 
-uniform layout(binding =20) sampler2D rampTex;
+uniform layout(binding = 20) sampler2D rampTex;
 
 uniform vec3  u_AmbientCol;
 uniform float u_AmbientStrength;

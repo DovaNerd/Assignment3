@@ -1,4 +1,4 @@
-#include "IlluminationBuffer.h"
+#include "Graphics/IlluminationBuffer.h"
 
 void IlluminationBuffer::Init(unsigned width, unsigned height)
 {
