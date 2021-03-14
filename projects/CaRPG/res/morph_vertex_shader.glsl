@@ -12,6 +12,7 @@ layout(location = 1) out vec3 outUV;
 layout(location = 2) out vec3 outNormal;
 layout(location = 4) out vec3 outColor;
 
+
 uniform mat4 u_ModelViewProjection;
 uniform mat4 u_View;
 uniform mat4 u_Model;

@@ -12,6 +12,7 @@ layout(location = 1) out vec3 outUV;
 layout(location = 2) out vec3 outNormal;
 layout(location = 3) out vec3 outColor;
 
+
 uniform vec2 offset;
 uniform mat4 scale;
 uniform float aspect;

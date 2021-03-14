@@ -13,11 +13,8 @@ uniform float u_textureMix;
 layout(location = 0) out vec4 outColors;
 layout(location = 1) out vec3 outNormals;
 layout(location = 2) out vec3 outSpecs;
-layout(location = 3) out vec3 outPositions;/*
-layout(location = 0) in vec3 outPositions;
-layout(location = 1) in vec3 outSpecs;
-layout(location = 2) in vec3 outNormals;
-layout(location = 3) in vec4 outColors;*/
+layout(location = 3) out vec3 outPositions;
+
 
 void main()
 {

@@ -38,13 +38,10 @@ void main()
 
 	vec4 lightAccum = texture(s_lightAccumTex, inUV);
 
-	//vec4 skybox = texture(s_skybox, inUV);
 
 	vec3 ambient = ambience._lightAmbientPow * ambience._ambientCol.rgb;
 
 	vec3 result = (ambient + lightAccum.rbg) * textureColor.rgb;
-
-	//result = result * skybox.rgb;
 
 	frag_color = vec4(result, 1.0);
 

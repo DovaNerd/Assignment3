@@ -711,6 +711,11 @@ void SceningTest::Start()
 	htexTextures.push_back(syre::Texture("images/Rocks_HUD.png"));
 
 
+	gBufferShader = Shader::Create();
+	gBufferShader->LoadShaderPartFromFile("vertex_shader.glsl", GL_VERTEX_SHADER);
+	gBufferShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER); //added g buffer shader
+	gBufferShader->Link();
+
 	flatShader = Shader::Create();
 	flatShader->LoadShaderPartFromFile("flatVert.glsl", GL_VERTEX_SHADER);
 	flatShader->LoadShaderPartFromFile("flatFrag.glsl", GL_FRAGMENT_SHADER);
@@ -718,10 +723,10 @@ void SceningTest::Start()
 	
 	basicShader = Shader::Create();
 	basicShader->LoadShaderPartFromFile("vertex_shader.glsl", GL_VERTEX_SHADER);
-	basicShader->LoadShaderPartFromFile("frag_shader.glsl", GL_FRAGMENT_SHADER);
+	basicShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);//->LoadShaderPartFromFile("frag_shader.glsl", GL_FRAGMENT_SHADER);
 	basicShader->Link(); 
 
-	glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 2.0f);
+	glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 2.0f);  
 	glm::vec3 lightCol = glm::vec3(1.0f, 1.0f, 1.0f);
 	float     lightAmbientPow = 0.1f;
 	float     lightSpecularPow = 1.0f;
@@ -737,14 +742,14 @@ void SceningTest::Start()
 	basicShader->SetUniform("u_SpecularLightStrength", lightSpecularPow);
 	basicShader->SetUniform("u_AmbientCol", ambientCol);
 	basicShader->SetUniform("u_AmbientStrength", ambientPow);
-	basicShader->SetUniform("u_Shininess", shininess);
+	basicShader->SetUniform("u_Shininess", shininess); 
 
-
+	 
 	morphShader = Shader::Create();
 	morphShader->LoadShaderPartFromFile("morph_vertex_shader.glsl", GL_VERTEX_SHADER);
-	morphShader->LoadShaderPartFromFile("frag_shader.glsl", GL_FRAGMENT_SHADER);
+	morphShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);//->LoadShaderPartFromFile("frag_shader.glsl", GL_FRAGMENT_SHADER);
 	morphShader->Link();
-
+	 
 	lightPos = glm::vec3(0.0f, 0.0f, 2.0f);
 	lightCol = glm::vec3(1.0f, 1.0f, 1.0f);
 	lightAmbientPow = 0.1f;
@@ -765,17 +770,11 @@ void SceningTest::Start()
 
 	flatMorphShader = Shader::Create(); 
 	flatMorphShader->LoadShaderPartFromFile("flatMorphVert.glsl", GL_VERTEX_SHADER);
-	flatMorphShader->LoadShaderPartFromFile("flatFrag.glsl", GL_FRAGMENT_SHADER);
+	flatMorphShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);//->LoadShaderPartFromFile("flatFrag.glsl", GL_FRAGMENT_SHADER);
 	flatMorphShader->Link();
-
-	 
-	gBufferShader = Shader::Create();
-	gBufferShader->LoadShaderPartFromFile("vertex_shader.glsl", GL_VERTEX_SHADER);
-	gBufferShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER); //added g buffer shader
-	gBufferShader->Link();
-
-
-	auto& camComponent = camera;
+	  
+	   
+	auto& camComponent = camera;  
   	camComponent->SetPosition(glm::vec3(0, 3, 3)); // Set initial position
 	camComponent->SetUp(glm::vec3(0, 0, 1)); // Use a z-up coordinate system
 	camComponent->LookAt(glm::vec3(0.0f)); // Look at center of the screen
@@ -1201,6 +1200,22 @@ int SceningTest::Update()
 			m_Registry.get<syre::PathAnimator>(m_enemy).SetSpeed(1.0, true);
 		}
 	}
+
+	// Grab out camera info from the camera object
+	glm::mat4 view = glm::inverse(camera->GetView());
+	glm::mat4 projection = camera->GetProjection();
+	glm::mat4 viewProjection = projection * view;
+
+	//Set up light space matrix
+	glm::mat4 lightProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, -30.0f, 30.0f);
+	glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(-illuminationBuffer->GetSunRef()._lightDirection), glm::vec3(), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 lightSpaceViewProj = lightProjectionMatrix * lightViewMatrix;
+
+	//for shadows 
+	//	illuminationBuffer->SetLightSpaceViewProj(lightSpaceViewProj);
+	//	glm::vec3 camPos = camera->GetPosition();
+	//	illuminationBuffer->SetCamPos(camPos);
+
 	flatMorphShader->Bind();
 	flatMorphShader->SetUniformMatrix("scale", glm::scale(glm::mat4(1.0f), glm::vec3(0.12f)));
 	flatMorphShader->SetUniform("offset", glm::vec2(-0.55, -0.97f));
@@ -1234,19 +1249,7 @@ int SceningTest::Update()
 	basicShader->SetUniform("u_ToonShade", toonShade ? 1 : 0);
 
 
-	// Grab out camera info from the camera object
-	glm::mat4 view = glm::inverse(camera->GetView());
-	glm::mat4 projection = camera->GetProjection();
-	glm::mat4 viewProjection = projection * view;
-
-	//Set up light space matrix
-	glm::mat4 lightProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, -30.0f, 30.0f);
-	glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(-illuminationBuffer->GetSunRef()._lightDirection), glm::vec3(), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 lightSpaceViewProj = lightProjectionMatrix * lightViewMatrix;
-
-//	illuminationBuffer->SetLightSpaceViewProj(lightSpaceViewProj);
-//	glm::vec3 camPos = camera->GetPosition();
-//	illuminationBuffer->SetCamPos(camPos);
+	
 	 
 	auto renderView = m_Registry.view<syre::Mesh, syre::Transform, syre::Texture>();
 	for (auto entity : renderView)
