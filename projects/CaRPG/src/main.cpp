@@ -164,8 +164,10 @@ int main()
 	//turn off for build for gdw
 	glDebugMessageCallback(GlDebugMessage, nullptr);
 	//end of cg tutorial
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	//glEnable(GL_BLEND);
+
+//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	std::vector<syre::SceneParent*> scenes;////////////
 	scenes.push_back(new MenuScreen(window));
@@ -198,7 +200,7 @@ int main()
 	camera = curScene->GetCam();
 	GlfwWindowResizedCallback(window, 1280, 720);
 
-
+	    
 	/*glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	GLFWcursor* cursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
 	glfwSetCursor(window, cursor);
@@ -244,7 +246,7 @@ int main()
 
 		}
 		curScene->ImGUIUpdate();
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(window); 
 	}
 
 	glfwTerminate();

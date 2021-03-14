@@ -2,8 +2,12 @@
 #include "Cars.h"
 #include "Obstacles.h"
 
+
 int start = 0;
 bool film = false;
+
+bool drawGBuffer = false;
+bool drawIllumBuffer = false;
 
 SceningTest::SceningTest(GLFWwindow* inWind)
 {
@@ -21,15 +25,25 @@ void SceningTest::Start()
 	cocoBuff = m_Registry.create();
 	bloomBuff = m_Registry.create();
 	blurBuff = m_Registry.create();
+	
+	gBuff = m_Registry.create();
+	illBuff = m_Registry.create();
+
 	m_Registry.emplace<PostEffect>(sceneBuff);
 	m_Registry.emplace<CubeCoCoEffect>(cocoBuff);
 	m_Registry.emplace<CombinedBloom>(bloomBuff);
 	m_Registry.emplace<Blur>(blurBuff);
+
+	m_Registry.emplace<GBuffer>(gBuff);
+	m_Registry.emplace<IlluminationBuffer>(illBuff);
+
 	m_Registry.get<PostEffect>(sceneBuff).Init(width, height);
 	m_Registry.get<CubeCoCoEffect>(cocoBuff).Init(width, height);
 	m_Registry.get<CombinedBloom>(bloomBuff).Init(width, height);
 	m_Registry.get<Blur>(blurBuff).Init(width, height);
 
+	m_Registry.get<GBuffer>(gBuff).Init(width, height);
+	m_Registry.get<IlluminationBuffer>(illBuff).Init(width, height);
 
 
 	cubes.push_back(LUT3D("cubes/Neutral-512.cube"));
@@ -696,22 +710,23 @@ void SceningTest::Start()
 	htexTextures.push_back(syre::Texture("images/Chicane_HUD.png"));
 	htexTextures.push_back(syre::Texture("images/Rocks_HUD.png"));
 
+
+	gBufferShader = Shader::Create();
+	gBufferShader->LoadShaderPartFromFile("vertex_shader.glsl", GL_VERTEX_SHADER);
+	gBufferShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER); //added g buffer shader
+	gBufferShader->Link();
+
 	flatShader = Shader::Create();
 	flatShader->LoadShaderPartFromFile("flatVert.glsl", GL_VERTEX_SHADER);
 	flatShader->LoadShaderPartFromFile("flatFrag.glsl", GL_FRAGMENT_SHADER);
 	flatShader->Link();
-
-
-
-
-	
 	
 	basicShader = Shader::Create();
 	basicShader->LoadShaderPartFromFile("vertex_shader.glsl", GL_VERTEX_SHADER);
-	basicShader->LoadShaderPartFromFile("frag_shader.glsl", GL_FRAGMENT_SHADER);
-	basicShader->Link();
+	basicShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);//->LoadShaderPartFromFile("frag_shader.glsl", GL_FRAGMENT_SHADER);
+	basicShader->Link(); 
 
-	glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 2.0f);
+	glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 2.0f);  
 	glm::vec3 lightCol = glm::vec3(1.0f, 1.0f, 1.0f);
 	float     lightAmbientPow = 0.1f;
 	float     lightSpecularPow = 1.0f;
@@ -727,14 +742,14 @@ void SceningTest::Start()
 	basicShader->SetUniform("u_SpecularLightStrength", lightSpecularPow);
 	basicShader->SetUniform("u_AmbientCol", ambientCol);
 	basicShader->SetUniform("u_AmbientStrength", ambientPow);
-	basicShader->SetUniform("u_Shininess", shininess);
+	basicShader->SetUniform("u_Shininess", shininess); 
 
-
+	 
 	morphShader = Shader::Create();
 	morphShader->LoadShaderPartFromFile("morph_vertex_shader.glsl", GL_VERTEX_SHADER);
-	morphShader->LoadShaderPartFromFile("frag_shader.glsl", GL_FRAGMENT_SHADER);
+	morphShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);//->LoadShaderPartFromFile("frag_shader.glsl", GL_FRAGMENT_SHADER);
 	morphShader->Link();
-
+	 
 	lightPos = glm::vec3(0.0f, 0.0f, 2.0f);
 	lightCol = glm::vec3(1.0f, 1.0f, 1.0f);
 	lightAmbientPow = 0.1f;
@@ -746,21 +761,21 @@ void SceningTest::Start()
 	// every frame
 	morphShader->SetUniform("u_LightPos", lightPos);
 	morphShader->SetUniform("u_LightCol", lightCol);
-	morphShader->SetUniform("u_AmbientLightStrength", lightAmbientPow);
+	morphShader->SetUniform("u_AmbientLightStrength", lightAmbientPow); 
 	morphShader->SetUniform("u_SpecularLightStrength", lightSpecularPow);
 	morphShader->SetUniform("u_AmbientCol", ambientCol);
 	morphShader->SetUniform("u_AmbientStrength", ambientPow);
 	morphShader->SetUniform("u_Shininess", shininess);
 
 
-	flatMorphShader = Shader::Create();
+	flatMorphShader = Shader::Create(); 
 	flatMorphShader->LoadShaderPartFromFile("flatMorphVert.glsl", GL_VERTEX_SHADER);
-	flatMorphShader->LoadShaderPartFromFile("flatFrag.glsl", GL_FRAGMENT_SHADER);
+	flatMorphShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);//->LoadShaderPartFromFile("flatFrag.glsl", GL_FRAGMENT_SHADER);
 	flatMorphShader->Link();
-
-
-	auto& camComponent = camera;
-	camComponent->SetPosition(glm::vec3(0, 3, 3)); // Set initial position
+	  
+	   
+	auto& camComponent = camera;  
+  	camComponent->SetPosition(glm::vec3(0, 3, 3)); // Set initial position
 	camComponent->SetUp(glm::vec3(0, 0, 1)); // Use a z-up coordinate system
 	camComponent->LookAt(glm::vec3(0.0f)); // Look at center of the screen
 	camComponent->SetFovDegrees(100.0f); // Set an initial FOV
@@ -786,12 +801,16 @@ int SceningTest::Update()
 	CombinedBloom* bloom = &m_Registry.get<CombinedBloom>(bloomBuff);
 	Blur* blur = &m_Registry.get<Blur>(blurBuff);
 
-
+	GBuffer* gBuffer = &m_Registry.get<GBuffer>(gBuff); //g buffer
+	IlluminationBuffer* illuminationBuffer = &m_Registry.get<IlluminationBuffer>(illBuff); //illum buffer
 
 	framebuffer->Clear();
 	colorCorrect->Clear();
 	bloom->Clear();
 	blur->Clear();
+
+	gBuffer->Clear();			 //clear
+	illuminationBuffer->Clear();
 
 	AudioEngine& engine = AudioEngine::Instance();
 
@@ -1018,7 +1037,7 @@ int SceningTest::Update()
 				EnemyComponent.SetBrk();
 				EnemyComponent.ChangeGears();
 
-			}
+			} 
 		}
 		/*
 	if (showGear == false)
@@ -1181,6 +1200,22 @@ int SceningTest::Update()
 			m_Registry.get<syre::PathAnimator>(m_enemy).SetSpeed(1.0, true);
 		}
 	}
+
+	// Grab out camera info from the camera object
+	glm::mat4 view = glm::inverse(camera->GetView());
+	glm::mat4 projection = camera->GetProjection();
+	glm::mat4 viewProjection = projection * view;
+
+	//Set up light space matrix
+	glm::mat4 lightProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, -30.0f, 30.0f);
+	glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(-illuminationBuffer->GetSunRef()._lightDirection), glm::vec3(), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 lightSpaceViewProj = lightProjectionMatrix * lightViewMatrix;
+
+	//for shadows 
+	//	illuminationBuffer->SetLightSpaceViewProj(lightSpaceViewProj);
+	//	glm::vec3 camPos = camera->GetPosition();
+	//	illuminationBuffer->SetCamPos(camPos);
+
 	flatMorphShader->Bind();
 	flatMorphShader->SetUniformMatrix("scale", glm::scale(glm::mat4(1.0f), glm::vec3(0.12f)));
 	flatMorphShader->SetUniform("offset", glm::vec2(-0.55, -0.97f));
@@ -1196,9 +1231,10 @@ int SceningTest::Update()
 	}
 
 	//framebuffer bound
-	framebuffer->BindBuffer(0);
+	//framebuffer->BindBuffer(0);
+	gBuffer->Bind(); //bind g buffer
+
 	rampTex->Bind(20);
-	
 
 	basicShader->Bind();
 	basicShader->SetUniform("u_CamPos", camComponent->GetPosition());
@@ -1213,7 +1249,8 @@ int SceningTest::Update()
 	basicShader->SetUniform("u_ToonShade", toonShade ? 1 : 0);
 
 
-
+	
+	 
 	auto renderView = m_Registry.view<syre::Mesh, syre::Transform, syre::Texture>();
 	for (auto entity : renderView)
 	{
@@ -1222,7 +1259,7 @@ int SceningTest::Update()
 		basicShader->SetUniformMatrix("u_Model", transform);
 		basicShader->SetUniformMatrix("u_ModelRotation", glm::mat3(transform));
 		renderView.get<syre::Texture>(entity).Bind();
-		renderView.get<syre::Mesh>(entity).Render();
+		renderView.get<syre::Mesh>(entity).Render();   
 	}
 	auto listRenderView = m_Registry.view<syre::Mesh, syre::TransformList, syre::Texture>();
 	for (auto entity : listRenderView)
@@ -1265,33 +1302,49 @@ int SceningTest::Update()
 		morphListRenderView.get<syre::Texture>(entity).Bind();
 		morphListRenderView.get<syre::TransformList>(entity).ListRender(morphShader, morphListRenderView.get<syre::MorphRenderer>(entity));
 	}
+	
+	
+	gBuffer->Unbind();
+	//gBuffer->DrawBuffersToScreen(); 
+	illuminationBuffer->BindBuffer(0);
 
-	PostEffect* lastBuffer = framebuffer;
-	framebuffer->UnBindBuffer();
+	illuminationBuffer->UnBindBuffer();
+
+	illuminationBuffer->ApplyEffect(gBuffer);
+
+
+	if (drawGBuffer)
+	{
+		gBuffer->DrawBuffersToScreen();
+	}
+	else if (drawIllumBuffer)
+	{
+		illuminationBuffer->DrawIllumBuffer();
+	}
+	else
+	{
+		illuminationBuffer->DrawToScreen();
+	}
 
 	if (blooming)
 	{
-		bloom->ApplyEffect(lastBuffer);
+		bloom->ApplyEffect(illuminationBuffer);
 
-		lastBuffer = bloom;
 	}
 	if (blurring)
 	{
-		blur->ApplyEffect(lastBuffer);
+		blur->ApplyEffect(illuminationBuffer);
 
-		lastBuffer = blur;
 	}
 
 	if (correcting)
 	{
 		cubes[activeCube].bind(30);
 
-		colorCorrect->ApplyEffect(lastBuffer);
+		colorCorrect->ApplyEffect(illuminationBuffer);
 
-		lastBuffer = colorCorrect;
 	}
-	lastBuffer->DrawToScreen();
-
+	
 
 	if (!manualCamera)
 	{
@@ -1436,6 +1489,9 @@ void SceningTest::ImGUIUpdate()
 				}
 
 				ImGui::Checkbox("Toon Shading", &toonShade);
+
+				ImGui::Checkbox("Draw GBuffer", &drawGBuffer);///////////////
+				ImGui::Checkbox("Draw Illum Buffer", &drawIllumBuffer);
 
 				basicShader->SetUniform("u_film", (int)film); //options for lighting
 				ImGui::Checkbox("Film Grain", &film);
