@@ -65,7 +65,7 @@ private:
 	entt::entity cocoBuff;
 	entt::entity gBuff;
 	entt::entity illBuff;
-
+	
 	bool correcting = true;
 	entt::entity bloomBuff;
 	bool blooming = true;

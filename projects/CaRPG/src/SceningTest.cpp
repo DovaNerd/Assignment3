@@ -27,7 +27,7 @@ void SceningTest::Start()
 	blurBuff = m_Registry.create();
 	
 	gBuff = m_Registry.create();
-	illBuff = m_Registry.create();
+	illBuff = m_Registry.create();  
 
 	m_Registry.emplace<PostEffect>(sceneBuff);
 	m_Registry.emplace<CubeCoCoEffect>(cocoBuff);
@@ -44,7 +44,6 @@ void SceningTest::Start()
 
 	m_Registry.get<GBuffer>(gBuff).Init(width, height);
 	m_Registry.get<IlluminationBuffer>(illBuff).Init(width, height);
-
 
 	cubes.push_back(LUT3D("cubes/Neutral-512.cube"));
 	cubes.push_back(LUT3D("cubes/Cool.cube"));
@@ -1338,7 +1337,6 @@ int SceningTest::Update()
 			blur->ApplyEffect(PrevBuffer);
 			PrevBuffer = blur;
 		}
-
 		if (correcting)
 		{
 			cubes[activeCube].bind(30);
@@ -1346,10 +1344,12 @@ int SceningTest::Update()
 			colorCorrect->ApplyEffect(PrevBuffer);
 			PrevBuffer = colorCorrect;
 		}
-		//illuminationBuffer->DrawToScreen();
+		
 	}
 	PrevBuffer->DrawToScreen();
 
+	
+	bloom->ApplyEffect(PrevBuffer);
 	if (!manualCamera)
 	{
 		camComponent->SetPosition(m_Registry.get<syre::Transform>(m_PCar).GetPosition() + glm::vec3(1.0f, 4.0f, 5.0f));
