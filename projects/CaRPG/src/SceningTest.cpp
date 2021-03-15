@@ -1303,15 +1303,17 @@ int SceningTest::Update()
 		morphListRenderView.get<syre::TransformList>(entity).ListRender(morphShader, morphListRenderView.get<syre::MorphRenderer>(entity));
 	}
 	
-	
-	gBuffer->Unbind();
-	//gBuffer->DrawBuffersToScreen(); 
-	illuminationBuffer->BindBuffer(0);
+	PostEffect* PrevBuffer = illuminationBuffer; //holds last buffer
 
+	gBuffer->Unbind();
+	
+	illuminationBuffer->BindBuffer(0);
+	
 	illuminationBuffer->UnBindBuffer();
 
 	illuminationBuffer->ApplyEffect(gBuffer);
 
+	
 
 	if (drawGBuffer)
 	{
@@ -1323,28 +1325,28 @@ int SceningTest::Update()
 	}
 	else
 	{
-		illuminationBuffer->DrawToScreen();
+		if (blooming)
+		{
+			bloom->ApplyEffect(PrevBuffer);
+
+			PrevBuffer = bloom;
+		}
+		if (blurring)
+		{
+			blur->ApplyEffect(PrevBuffer);
+			PrevBuffer = blur;
+		}
+
+		if (correcting)
+		{
+			cubes[activeCube].bind(30);
+
+			colorCorrect->ApplyEffect(PrevBuffer);
+			PrevBuffer = colorCorrect;
+		}
+		//illuminationBuffer->DrawToScreen();
 	}
-
-	if (blooming)
-	{
-		bloom->ApplyEffect(illuminationBuffer);
-
-	}
-	if (blurring)
-	{
-		blur->ApplyEffect(illuminationBuffer);
-
-	}
-
-	if (correcting)
-	{
-		cubes[activeCube].bind(30);
-
-		colorCorrect->ApplyEffect(illuminationBuffer);
-
-	}
-	
+	PrevBuffer->DrawToScreen();
 
 	if (!manualCamera)
 	{
