@@ -244,7 +244,7 @@ int main()
 			}
 			
 
-		}
+		} 
 		curScene->ImGUIUpdate();
 		glfwSwapBuffers(window); 
 	}
