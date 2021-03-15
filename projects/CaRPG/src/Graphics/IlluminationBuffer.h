@@ -38,6 +38,8 @@ public:
 
 	void EnableSun(bool enabled);
 
+	void Toon(int);
+
 private:
 	glm::mat4 _lightSpaceViewProj;
 	glm::vec3 _camPos;
@@ -47,4 +49,6 @@ private:
 	bool _sunEnabled = true;
 	
 	DirectionalLight _sun;
+
+	int toon;
 };

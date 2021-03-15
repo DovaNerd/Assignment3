@@ -2,6 +2,13 @@
 
 layout (location = 0) in vec2 inUV;
 
+
+const int bands = 5;
+const float scaleFactor = 1.0 / bands;
+uniform int u_ToonShade;
+
+
+
 struct DirectionalLight
 {
 	//Light direction (defaults to down, to the left, and a little forward)
@@ -41,7 +48,7 @@ void main()
 
 	vec3 ambient = ambience._lightAmbientPow * ambience._ambientCol.rgb;
 
-	vec3 result = (ambient + lightAccum.rbg) * textureColor.rgb;
+	vec3 result = u_ToonShade == 1? scaleFactor * floor(bands * (ambient + lightAccum.rbg)) * textureColor.rgb : (ambient + lightAccum.rbg) * textureColor.rgb;
 
 	frag_color = vec4(result, 1.0);
 

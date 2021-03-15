@@ -12,7 +12,7 @@ public:
 
 	//applies effect to screeen
 	void DrawToScreen() override;
-
+	
 	float GetThreshold() const;
 
 	void SetThreshold(float threshold);

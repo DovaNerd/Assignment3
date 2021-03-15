@@ -61,7 +61,7 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 	}
 
 	_shaders[Lights::AMBIENT]->Bind();
-
+	_shaders[Lights::AMBIENT]->SetUniform("u_ToonShade", toon);
 	_sunBuffer.Bind(0);
 
 	gBuffer->BindLighting();
@@ -123,3 +123,9 @@ void IlluminationBuffer::EnableSun(bool enabled)
 {
 	_sunEnabled = enabled;
 }
+
+void IlluminationBuffer::Toon(int state)
+{
+	toon = state;
+}
+

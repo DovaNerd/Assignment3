@@ -1177,6 +1177,7 @@ int SceningTest::Update()
 			}
 		}
 	}
+	
 	else
 	{
 		m_Registry.get<syre::PathAnimator>(m_PCar).IncrementSegment(2);//needs changed
@@ -1246,9 +1247,11 @@ int SceningTest::Update()
 	basicShader->SetUniform("u_CarEmissive", carLighting ? 1 : 0);
 	basicShader->SetUniform("u_RampingSpec", rampOnSpec ? 1 : 0);
 	basicShader->SetUniform("u_RampingDiff", rampOnDiff ? 1 : 0);
-	basicShader->SetUniform("u_ToonShade", toonShade ? 1 : 0);
 
 
+	illuminationBuffer->Toon(toonShade ? 1 : 0);
+
+	
 	
 	 
 	auto renderView = m_Registry.view<syre::Mesh, syre::Transform, syre::Texture>();
@@ -1267,7 +1270,7 @@ int SceningTest::Update()
 		listRenderView.get<syre::Texture>(entity).Bind();
 		listRenderView.get<syre::TransformList>(entity).ListRender(basicShader, listRenderView.get<syre::Mesh>(entity), deltaTime);
 	}
-
+	
 	auto morphRenderView = m_Registry.view<syre::MorphRenderer, syre::Transform, syre::Texture>();
 	morphShader->Bind();
 
@@ -1314,7 +1317,6 @@ int SceningTest::Update()
 	illuminationBuffer->ApplyEffect(gBuffer);
 
 	
-
 	if (drawGBuffer)
 	{
 		gBuffer->DrawBuffersToScreen();
