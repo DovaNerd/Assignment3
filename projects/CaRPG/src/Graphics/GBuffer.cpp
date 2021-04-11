@@ -84,6 +84,39 @@ void GBuffer::DrawBuffersToScreen()
 	_passThrough->UnBind();
 }
 
+void GBuffer::DrawPosBuff()
+{
+	_passThrough->Bind();
+
+	_gBuffer.BindColorAsTexture(Target::POSITION, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+
+	_passThrough->UnBind();
+}
+
+void GBuffer::DrawNormalBuff()
+{
+	_passThrough->Bind();
+
+	_gBuffer.BindColorAsTexture(Target::NORMAL, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+
+	_passThrough->UnBind();
+}
+
+void GBuffer::DrawColorBuff()
+{
+	_passThrough->Bind();
+
+	_gBuffer.BindColorAsTexture(Target::SPECULAR, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+
+	_passThrough->UnBind();
+}
+
 void GBuffer::Reshape(unsigned width, unsigned height)
 {
 	_windowWidth = width;

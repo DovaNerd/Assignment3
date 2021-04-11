@@ -5,6 +5,11 @@
 
 int start = 0;
 bool film = false;
+bool drawMesh = false;
+bool drawPositionBuf = false;
+bool drawNormalBuf = false;
+bool drawColorBuf = false;
+bool drawLightAccum = false;
 
 bool drawGBuffer = false;
 bool drawIllumBuffer = false;
@@ -1320,10 +1325,23 @@ int SceningTest::Update()
 	{
 		gBuffer->DrawBuffersToScreen();
 	}
+	else if (drawPositionBuf)
+	{
+		gBuffer->DrawPosBuff();
+	}
+	else if (drawNormalBuf)
+	{
+		gBuffer->DrawNormalBuff();
+	}
+	else if (drawColorBuf)
+	{
+		gBuffer->DrawColorBuff();
+	}
 	else if (drawIllumBuffer)
 	{
 		illuminationBuffer->DrawIllumBuffer();
 	}
+	
 	else
 	{
 		if (blooming)
@@ -1492,14 +1510,20 @@ void SceningTest::ImGUIUpdate()
 					ImGui::Text("0 is Neutral, 1 is Cool, 2 is Warm, 3 is Custom");
 				}
 
-				ImGui::Checkbox("Toon Shading", &toonShade);
+				//ImGui::Checkbox("Toon Shading", &toonShade);
+
+				ImGui::Checkbox("Toggle Mesh", &drawMesh);
+				ImGui::Checkbox("Position/Depth Buffer", &drawPositionBuf);
+				ImGui::Checkbox("Normal Buffer", &drawNormalBuf);
+				ImGui::Checkbox("Color/Material Buffer", &drawColorBuf);
+				ImGui::Checkbox("Light Accumulation Buffer", &drawLightAccum);
 
 				ImGui::Checkbox("Draw GBuffer", &drawGBuffer);///////////////
 				ImGui::Checkbox("Draw Illum Buffer", &drawIllumBuffer);
 
 				basicShader->SetUniform("u_film", (int)film); //options for lighting
-				ImGui::Checkbox("Film Grain", &film);
-				basicShader->SetUniform("u_film", (int)film); //options for lighting
+				//ImGui::Checkbox("Film Grain", &film);
+				//basicShader->SetUniform("u_film", (int)film); //options for lighting
 
 			}
 			if (ImGui::CollapsingHeader("Lighting"))
